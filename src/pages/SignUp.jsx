@@ -14,10 +14,14 @@ import {
   getAuth,
   updateProfile,
 } from 'firebase/auth';
-import {app} from '../firebase.config';
-import {firebaseConfig} from '../firebase.config';
-
-const auth = getAuth(app);
+import {app, db} from '../firebase.config';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  setDoc,
+  doc,
+} from 'firebase/firestore';
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,14 +41,33 @@ const SignUp = () => {
     }));
   };
 
-  const api = firebaseConfig.apiKey;
-
-  console.log(api);
-
-  const getAuthRegister = async (e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
-    const user = await createUserWithEmailAndPassword(auth, email, password);
-    console.log(user);
+
+    try {
+      const auth = getAuth(app);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      });
+
+      const formDataCopy = {...formData};
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+
+      await setDoc(doc(db, 'users', user.uid), formDataCopy);
+      // console.log('Document written with ID: ', docRef.id);
+      // console.log(userCredential);
+      console.log(formDataCopy);
+      navigate('/');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -54,7 +77,7 @@ const SignUp = () => {
           <p className="pageHeader">Welcome Back!</p>
         </header>
 
-        <form onSubmit={getAuthRegister}>
+        <form onSubmit={onSubmitHandler}>
           <input
             type="text"
             placeholder="Name"
