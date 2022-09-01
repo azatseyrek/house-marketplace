@@ -1,7 +1,15 @@
+// React:
 import {useState} from 'react';
+// React-Router-Dom:
 import {Link, useNavigate} from 'react-router-dom';
-import {ReactComponent as ArrowRightIcon} from '../assets/svg/keyboardArrowRightIcon.svg';
+// Firebase:
+import {getAuth, signInWithEmailAndPassword} from 'firebase/auth';
+// Toastify:
+import {toast} from 'react-toastify';
+// Assets:
 import visibilityIcon from '../assets/svg/visibilityIcon.svg';
+import {ReactComponent as ArrowRightIcon} from '../assets/svg/keyboardArrowRightIcon.svg';
+import OAuth from '../components/OAuth';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +27,23 @@ const SignIn = () => {
       [e.target.id]: e.target.value,
     }));
   };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      if (user) {
+        navigate('/profile');
+      }
+    } catch (error) {
+      toast.error(error.message.split('/')[1].slice(0, -2).toUpperCase());
+    }
+  };
 
   return (
     <>
@@ -27,7 +52,7 @@ const SignIn = () => {
           <p className="pageHeader">Welcome Back!</p>
         </header>
 
-        <form>
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             placeholder="Email"
@@ -57,12 +82,12 @@ const SignIn = () => {
           </Link>
           <div className="signInBar">
             <p className="signInText">Sign In</p>
-            <button className="signInButton">
+            <button type="submit" className="signInButton">
               <ArrowRightIcon fill="#ffffff" width="34px" height="34px" />
             </button>
           </div>
         </form>
-        {/* Google OAuth  */}
+        <OAuth />
         <Link to="/sign-up" className="registerLink">
           Sign Up Instead
         </Link>

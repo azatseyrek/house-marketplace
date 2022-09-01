@@ -3,11 +3,11 @@ import {useState} from 'react';
 
 // React-Router_dom
 import {Link, useNavigate} from 'react-router-dom';
-
+// Toastify:
+import {toast} from 'react-toastify';
 // Assets
 import {ReactComponent as ArrowRightIcon} from '../assets/svg/keyboardArrowRightIcon.svg';
 import visibilityIcon from '../assets/svg/visibilityIcon.svg';
-
 // Firebase:
 import {
   createUserWithEmailAndPassword,
@@ -15,13 +15,9 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import {app, db} from '../firebase.config';
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  setDoc,
-  doc,
-} from 'firebase/firestore';
+import {serverTimestamp, setDoc, doc} from 'firebase/firestore';
+// Components:
+import OAuth from '../components/OAuth';
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -61,12 +57,10 @@ const SignUp = () => {
       formDataCopy.timestamp = serverTimestamp();
 
       await setDoc(doc(db, 'users', user.uid), formDataCopy);
-      // console.log('Document written with ID: ', docRef.id);
-      // console.log(userCredential);
-      console.log(formDataCopy);
-      navigate('/');
+
+      navigate('/profile');
     } catch (error) {
-      console.log(error);
+      toast.error(error.message.split('/')[1].slice(0, -2).toUpperCase());
     }
   };
 
@@ -85,6 +79,7 @@ const SignUp = () => {
             id="name"
             value={name}
             onChange={onChange}
+            required
           />
           <input
             type="email"
@@ -120,7 +115,7 @@ const SignUp = () => {
             </button>
           </div>
         </form>
-        {/* Google OAuth  */}
+        <OAuth />
         <Link to="/sign-in" className="registerLink">
           Sign In Instead
         </Link>
